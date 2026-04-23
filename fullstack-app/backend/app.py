@@ -14,6 +14,9 @@ def get_conn():
 @app.route("/api/data", methods=["GET"])
 def get_data():
     conn = get_conn()
+    if conn is None:
+        return {"error": "No database connection"}
+
     cur = conn.cursor()
     cur.execute("CREATE TABLE IF NOT EXISTS items (id SERIAL PRIMARY KEY, text TEXT)")
     cur.execute("SELECT id, text FROM items")
