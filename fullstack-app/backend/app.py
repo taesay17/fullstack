@@ -6,6 +6,9 @@ app = Flask(__name__)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 def get_conn():
+    if not DATABASE_URL:
+        print("❌ DATABASE_URL not set")
+        return None
     return psycopg2.connect(DATABASE_URL)
 
 @app.route("/api/data", methods=["GET"])
