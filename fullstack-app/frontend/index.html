@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>My App</h2>
+
+<input id="text">
+<button onclick="add()">Add</button>
+
+<ul id="list"></ul>
+
+<script>
+const API = "PASTE_BACKEND_URL";
+
+async function load() {
+    const res = await fetch(API + "/api/data");
+    const data = await res.json();
+
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    data.forEach(item => {
+        const li = document.createElement("li");
+        li.innerHTML = item[1] + " <button onclick='del(" + item[0] + ")'>X</button>";
+        list.appendChild(li);
+    });
+}
+
+async function add() {
+    const text = document.getElementById("text").value;
+    await fetch(API + "/api/data", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({text})
+    });
+    load();
+}
+
+async function del(id) {
+    await fetch(API + "/api/data/" + id, {method: "DELETE"});
+    load();
+}
+
+load();
+</script>
+
+</body>
+</html>
