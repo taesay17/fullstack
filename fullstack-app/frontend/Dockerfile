@@ -1,7 +1,11 @@
-FROM nginx:alpine
+FROM node:18-alpine
 
-COPY . /usr/share/nginx/html
+WORKDIR /app
 
-EXPOSE 80
+RUN npm install -g serve
 
-CMD ["nginx", "-g", "daemon off;"]
+COPY . .
+
+ENV PORT=3000
+
+CMD ["serve", "-s", ".", "-l", "3000"]
