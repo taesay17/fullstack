@@ -10,7 +10,7 @@
 <ul id="list"></ul>
 
 <script>
-const API = "https://fullstack-production-088f.up.railway.app/";
+const API = "https://fullstack-production-088f.up.railway.app";
 
 async function load() {
     const res = await fetch(API + "/api/data");
@@ -21,7 +21,11 @@ async function load() {
 
     data.forEach(item => {
         const li = document.createElement("li");
-        li.innerHTML = item[1] + " <button onclick='del(" + item[0] + ")'>X</button>";
+
+        li.innerHTML =
+            item.text +
+            " <button onclick='del(" + item.id + ")'>X</button>";
+
         list.appendChild(li);
     });
 }
