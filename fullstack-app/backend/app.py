@@ -3,48 +3,121 @@ import psycopg2
 import os
 
 app = Flask(__name__)
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+
+# -------------------------
+# CONNECTION
+# -------------------------
 def get_conn():
     if not DATABASE_URL:
         print("❌ DATABASE_URL not set")
         return None
     return psycopg2.connect(DATABASE_URL)
 
+
+# -------------------------
+# INIT DATABASE (CREATE TABLE)
+# -------------------------
+def init_db():
+    conn = get_conn()
+    if conn is None:
+        return
+
+    cur = conn.cursor()
+
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS items (
+            id SERIAL PRIMARY KEY,
+            text TEXT NOT NULL
+        )
+    """)
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+init_db()
+
+
+# -------------------------
+# ROUTES
+# -------------------------
+
+@app.route("/", methods=["GET"])
+def home():
+    return "Backend работает!"
+
+
 @app.route("/api/data", methods=["GET"])
 def get_data():
     conn = get_conn()
     if conn is None:
-        return {"error": "No database connection"}
+        return jsonify({"error": "No database connection"}), 500
 
     cur = conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS items (id SERIAL PRIMARY KEY, text TEXT)")
     cur.execute("SELECT id, text FROM items")
     rows = cur.fetchall()
+
     cur.close()
     conn.close()
-    return jsonify(rows)
+
+    result = [{"id": r[0], "text": r[1]} for r in rows]
+
+    return jsonify(result)
+
 
 @app.route("/api/data", methods=["POST"])
 def add_data():
-    data = request.json
+    data = request.get_json()
+
+    if not data or "text" not in data:
+        return jsonify({"error": "No JSON body or missing 'text'"}), 400
+
     conn = get_conn()
+    if conn is None:
+        return jsonify({"error": "No database connection"}), 500
+
     cur = conn.cursor()
-    cur.execute("INSERT INTO items (text) VALUES (%s)", (data["text"],))
+
+    cur.execute(
+        "INSERT INTO items (text) VALUES (%s) RETURNING id",
+        (data["text"],)
+    )
+
+    item_id = cur.fetchone()[0]
+
     conn.commit()
     cur.close()
     conn.close()
-    return {"status": "ok"}
 
-@app.route("/api/data/<int:id>", methods=["DELETE"])
-def delete_data(id):
+    return jsonify({
+        "id": item_id,
+        "text": data["text"]
+    })
+
+
+@app.route("/api/data/<int:item_id>", methods=["DELETE"])
+def delete_data(item_id):
     conn = get_conn()
+    if conn is None:
+        return jsonify({"error": "No database connection"}), 500
+
     cur = conn.cursor()
-    cur.execute("DELETE FROM items WHERE id=%s", (id,))
+    cur.execute("DELETE FROM items WHERE id=%s", (item_id,))
+
     conn.commit()
     cur.close()
     conn.close()
-    return {"status": "deleted"}
 
+    return jsonify({"status": "deleted"})
+
+
+# -------------------------
+# RUN SERVER
+# -------------------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)))
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
