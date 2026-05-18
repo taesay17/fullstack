@@ -15,5 +15,11 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Check Python
-        run: python --version
+      - name: Install dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Done
+        run: echo "Dependencies installed"
