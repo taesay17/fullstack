@@ -2,31 +2,39 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout
+      # Скачать проект
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Setup Python
+      # Установить Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
-      # 3. Install dependencies
+      # Установить зависимости
       - name: Install dependencies
         run: |
           cd backend
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest
 
-      # 4. Run tests
+      # Проверка файлов
+      - name: Show backend files
+        run: |
+          ls backend
+
+      # Запуск тестов
       - name: Run tests
         run: |
           cd backend
-          pytest test_app.py
+          pytest
