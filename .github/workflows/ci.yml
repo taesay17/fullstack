@@ -1,27 +1,18 @@
 name: CI
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-          fetch-depth: 1
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Show files
         run: ls -la
 
-      - name: Show backend files
+      - name: Show backend
         run: ls -la backend
