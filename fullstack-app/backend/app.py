@@ -8,7 +8,7 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 
 # -------------------------
-# CONNECTION
+# DATABASE CONNECTION
 # -------------------------
 def get_conn():
     if not DATABASE_URL:
@@ -18,7 +18,7 @@ def get_conn():
 
 
 # -------------------------
-# INIT DATABASE (CREATE TABLE)
+# INIT DATABASE
 # -------------------------
 def init_db():
     conn = get_conn()
@@ -39,7 +39,12 @@ def init_db():
     conn.close()
 
 
-init_db()
+# -------------------------
+# RUN INIT BEFORE FIRST REQUEST
+# -------------------------
+@app.before_first_request
+def setup():
+    init_db()
 
 
 # -------------------------
@@ -74,7 +79,7 @@ def add_data():
     data = request.get_json()
 
     if not data or "text" not in data:
-        return jsonify({"error": "No JSON body or missing 'text'"}), 400
+        return jsonify({"error": "Missing 'text'"}), 400
 
     conn = get_conn()
     if conn is None:
