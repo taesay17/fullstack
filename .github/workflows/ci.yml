@@ -23,5 +23,5 @@ jobs:
 
       - name: Run tests
         run: |
-          cd backend
+          cd fullstack-app/backend
           python -m pytest
